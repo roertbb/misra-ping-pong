@@ -13,20 +13,10 @@ const (
 	losingPongProbability = 0
 )
 
-type nodeState int
-
-const (
-	noToken nodeState = iota
-	pingToken
-	pongToken
-	bothTokens
-)
-
 type node struct {
 	ping        *token
 	pong        *token
 	m           int
-	state       nodeState
 	comm        *comm
 	address     string
 	nextAddress string
@@ -37,7 +27,7 @@ func newNode(address string, addresses []string) *node {
 	nextAddress := addresses[nextAddressIdx]
 	comm := newComm(address, addresses)
 
-	newNode := node{ping: nil, pong: nil, m: 0, state: noToken, comm: comm, address: address, nextAddress: nextAddress}
+	newNode := node{ping: nil, pong: nil, m: 0, comm: comm, address: address, nextAddress: nextAddress}
 
 	if address == strLowestVal(addresses) {
 		fmt.Println("Generating first tokens")
@@ -52,28 +42,35 @@ func (n *node) run() {
 
 	if n.ping != nil && n.pong != nil {
 		fmt.Println("sending first tokens")
-		msg := message{Type: tokenMsg, Data: n.ping}
-		n.comm.send(msg, n.nextAddress)
-		msg = message{Type: tokenMsg, Data: n.pong}
-		n.comm.send(msg, n.nextAddress)
+
+		n.comm.send(message{Type: tokenMsg, Data: n.ping}, n.nextAddress)
+		n.ping = nil
+		n.comm.send(message{Type: tokenMsg, Data: n.pong}, n.nextAddress)
+		n.pong = nil
 	}
 
 	for {
-		fmt.Println(n.address, n.state)
+		fmt.Println(n.address, n.ping, n.pong)
 
-		switch n.state {
-		case noToken:
-			n.listen()
-		case pingToken:
-			n.criticalSection()
-			n.ilisten()
-			n.sendPingToken()
-		case pongToken:
-			n.sendPongToken()
-		case bothTokens:
+		if n.ping != nil && n.pong != nil {
+			// both token
 			n.incarnate()
 			n.sendPingToken()
 			n.sendPongToken()
+
+		} else if n.ping != nil {
+			// ping token
+			n.criticalSection()
+			n.ilisten()
+			n.sendPingToken()
+
+		} else if n.pong != nil {
+			// pong token
+			n.sendPongToken()
+
+		} else {
+			// no token
+			n.listen()
 		}
 	}
 }
@@ -117,41 +114,27 @@ func (n *node) handleTokenMsg(t *token) {
 		if n.m > 0 {
 			fmt.Println("lost Pong token - regenerating", t.Value)
 			n.regenerate(t.Value)
-			n.state = pongToken
 		} else {
 			fmt.Println("lost Ping token - regenerating", t.Value)
 			n.regenerate(t.Value)
-			n.state = pingToken
 		}
 	} else if abs(t.Value) < abs(n.m) {
 		fmt.Println("received some old token?", abs(t.Value), abs(n.m))
 		return
-	}
-
-	if t.Type == ping {
-		n.ping = t
-
-		switch n.state {
-		case noToken:
-			n.state = pingToken
-		case pongToken:
-			n.state = bothTokens
-		case pingToken, bothTokens:
+	} else if t.Type == ping {
+		if n.ping != nil {
 			fmt.Println("2 ping tokens?")
 			panic(nil)
 		}
-	} else if t.Type == pong {
-		n.pong = t
 
-		switch n.state {
-		case noToken:
-			n.state = pongToken
-		case pingToken:
-			n.state = bothTokens
-		case pongToken, bothTokens:
+		n.ping = t
+	} else if t.Type == pong {
+		if n.pong != nil {
 			fmt.Println("2 pong tokens?")
 			panic(nil)
 		}
+
+		n.pong = t
 	}
 }
 
@@ -181,12 +164,6 @@ func (n *node) sendPingToken() {
 	n.m = n.ping.Value
 	n.ping = nil
 
-	switch n.state {
-	case pingToken:
-		n.state = noToken
-	case bothTokens:
-		n.state = pongToken
-	}
 }
 
 func (n *node) sendPongToken() {
@@ -203,10 +180,4 @@ func (n *node) sendPongToken() {
 	n.m = n.pong.Value
 	n.pong = nil
 
-	switch n.state {
-	case pongToken:
-		n.state = noToken
-	case bothTokens:
-		n.state = pingToken
-	}
 }
