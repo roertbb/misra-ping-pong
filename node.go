@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	losingPingProbability = 0
-	losingPongProbability = 0.12345
+	losingPingProbability = 0.2
+	losingPongProbability = 0
 )
 
 type nodeState int
@@ -23,8 +23,8 @@ const (
 )
 
 type node struct {
-	ping        int
-	pong        int
+	ping        *token
+	pong        *token
 	m           int
 	state       nodeState
 	comm        *comm
@@ -37,12 +37,12 @@ func newNode(address string, addresses []string) *node {
 	nextAddress := addresses[nextAddressIdx]
 	comm := newComm(address, addresses)
 
-	newNode := node{ping: 0, pong: 0, m: 0, state: noToken, comm: comm, address: address, nextAddress: nextAddress}
+	newNode := node{ping: nil, pong: nil, m: 0, state: noToken, comm: comm, address: address, nextAddress: nextAddress}
 
 	if address == strLowestVal(addresses) {
 		fmt.Println("Generating first tokens")
-		newNode.ping = 1
-		newNode.pong = -1
+		newNode.ping = &token{Type: ping, Value: 1}
+		newNode.pong = &token{Type: pong, Value: -1}
 	}
 
 	return &newNode
@@ -50,11 +50,11 @@ func newNode(address string, addresses []string) *node {
 
 func (n *node) run() {
 
-	if n.ping != 0 && pong != 0 {
+	if n.ping != nil && n.pong != nil {
 		fmt.Println("sending first tokens")
-		msg := message{Type: tokenMsg, Data: token{Type: ping, Value: n.ping}}
+		msg := message{Type: tokenMsg, Data: n.ping}
 		n.comm.send(msg, n.nextAddress)
-		msg = message{Type: tokenMsg, Data: token{Type: pong, Value: n.pong}}
+		msg = message{Type: tokenMsg, Data: n.pong}
 		n.comm.send(msg, n.nextAddress)
 	}
 
@@ -124,12 +124,12 @@ func (n *node) handleTokenMsg(t *token) {
 			n.state = pingToken
 		}
 	} else if abs(t.Value) < abs(n.m) {
-		fmt.Println("received some old token?")
+		fmt.Println("received some old token?", abs(t.Value), abs(n.m))
 		return
 	}
 
 	if t.Type == ping {
-		n.ping = t.Value
+		n.ping = t
 
 		switch n.state {
 		case noToken:
@@ -141,7 +141,7 @@ func (n *node) handleTokenMsg(t *token) {
 			panic(nil)
 		}
 	} else if t.Type == pong {
-		n.pong = t.Value
+		n.pong = t
 
 		switch n.state {
 		case noToken:
@@ -156,22 +156,30 @@ func (n *node) handleTokenMsg(t *token) {
 }
 
 func (n *node) regenerate(val int) {
-	n.ping = abs(val)
-	n.pong = -n.ping
+	n.ping = &token{Type: ping, Value: abs(val)}
+	n.pong = &token{Type: pong, Value: -n.ping.Value}
 }
 
 func (n *node) incarnate() {
-	val := abs(n.ping) + 1
+	val := abs(n.ping.Value) + 1
 	fmt.Println("got 2 tokens - incarnating", val)
-	n.ping = val
-	n.pong = -n.ping
+	n.ping = &token{Type: ping, Value: val}
+	n.pong = &token{Type: pong, Value: -n.ping.Value}
 }
 
 func (n *node) sendPingToken() {
 	fmt.Println("sending ping token")
 	time.Sleep(time.Second)
 
-	n.m = n.ping
+	if rand.Float64() > losingPingProbability {
+		msg := message{Type: tokenMsg, Data: n.ping}
+		n.comm.send(msg, n.nextAddress)
+	} else {
+		fmt.Println("welp, ping token seems to be lost in depths of channel...")
+	}
+
+	n.m = n.ping.Value
+	n.ping = nil
 
 	switch n.state {
 	case pingToken:
@@ -179,32 +187,26 @@ func (n *node) sendPingToken() {
 	case bothTokens:
 		n.state = pongToken
 	}
-
-	if rand.Float64() > losingPingProbability {
-		msg := message{Type: tokenMsg, Data: token{Type: ping, Value: n.ping}}
-		n.comm.send(msg, n.nextAddress)
-	} else {
-		fmt.Println("welp, ping token seems to be lost")
-	}
 }
 
 func (n *node) sendPongToken() {
 	fmt.Println("sending pong token")
 	time.Sleep(time.Second * 2)
 
-	n.m = n.pong
+	if rand.Float64() > losingPongProbability {
+		msg := message{Type: tokenMsg, Data: n.pong}
+		n.comm.send(msg, n.nextAddress)
+	} else {
+		fmt.Println("welp, pong token seems to be lost in depths of channel...")
+	}
+
+	n.m = n.pong.Value
+	n.pong = nil
 
 	switch n.state {
 	case pongToken:
 		n.state = noToken
 	case bothTokens:
 		n.state = pingToken
-	}
-
-	if rand.Float64() > losingPongProbability {
-		msg := message{Type: tokenMsg, Data: token{Type: pong, Value: n.pong}}
-		n.comm.send(msg, n.nextAddress)
-	} else {
-		fmt.Println("welp, pong token seems to be lost")
 	}
 }
