@@ -20,17 +20,20 @@ type node struct {
 	comm        *comm
 	address     string
 	nextAddress string
+	log         *log
 }
 
 func newNode(address string, addresses []string) *node {
-	nextAddressIdx := (strIndexOf(address, addresses) + 1) % len(addresses)
+	idx := strIndexOf(address, addresses)
+	nextAddressIdx := (idx + 1) % len(addresses)
 	nextAddress := addresses[nextAddressIdx]
 	comm := newComm(address, addresses)
+	log := newLog(address, idx)
 
-	newNode := node{ping: nil, pong: nil, m: 0, comm: comm, address: address, nextAddress: nextAddress}
+	newNode := node{ping: nil, pong: nil, m: 0, comm: comm, address: address, nextAddress: nextAddress, log: log}
 
 	if address == strLowestVal(addresses) {
-		fmt.Println("Generating first tokens")
+		newNode.log.info("generating first tokens")
 		newNode.ping = &token{Type: ping, Value: 1}
 		newNode.pong = &token{Type: pong, Value: -1}
 	}
@@ -41,7 +44,7 @@ func newNode(address string, addresses []string) *node {
 func (n *node) run() {
 
 	if n.ping != nil && n.pong != nil {
-		fmt.Println("sending first tokens")
+		n.log.info("sending first tokens")
 
 		n.comm.send(message{Type: tokenMsg, Data: n.ping}, n.nextAddress)
 		n.ping = nil
@@ -50,7 +53,7 @@ func (n *node) run() {
 	}
 
 	for {
-		fmt.Println(n.address, n.ping, n.pong)
+		n.log.debug(fmt.Sprintf("state: ping %s | pong %s ", n.ping.tokenToValue(), n.pong.tokenToValue()))
 
 		if n.ping != nil && n.pong != nil {
 			// both token
@@ -76,9 +79,9 @@ func (n *node) run() {
 }
 
 func (n *node) criticalSection() {
-	fmt.Println("entering critical section...")
+	n.log.info("entering critical section...")
 	time.Sleep(time.Second * 2)
-	fmt.Println("leaving critical section...")
+	n.log.info("leaving critical section...")
 }
 
 func (n *node) listen() {
@@ -102,35 +105,35 @@ func (n *node) processMsg(msg *message) {
 	case tokenMsg:
 		t := newToken()
 		ms.Decode(msg.Data, t)
-		fmt.Println("received token", *t)
 		n.handleTokenMsg(t)
+		n.log.info(fmt.Sprintf("received %s token with %d value", t.tokenToType(), t.Value))
 	default:
-		fmt.Println("some other type of message?")
+		n.log.warn("some other type of message?")
 	}
 }
 
 func (n *node) handleTokenMsg(t *token) {
 	if t.Value == n.m {
 		if n.m > 0 {
-			fmt.Println("lost Pong token - regenerating", t.Value)
+			n.log.info("lost PONG token - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		} else {
-			fmt.Println("lost Ping token - regenerating", t.Value)
+			n.log.info("lost PING token - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		}
 	} else if abs(t.Value) < abs(n.m) {
-		fmt.Println("received some old token?", abs(t.Value), abs(n.m))
+		n.log.warn("received some old token?", abs(t.Value), abs(n.m))
 		return
 	} else if t.Type == ping {
 		if n.ping != nil {
-			fmt.Println("2 ping tokens?")
+			n.log.error("2 PING tokens?")
 			panic(nil)
 		}
 
 		n.ping = t
 	} else if t.Type == pong {
 		if n.pong != nil {
-			fmt.Println("2 pong tokens?")
+			n.log.error("2 PONG tokens?")
 			panic(nil)
 		}
 
@@ -145,39 +148,37 @@ func (n *node) regenerate(val int) {
 
 func (n *node) incarnate() {
 	val := abs(n.ping.Value) + 1
-	fmt.Println("got 2 tokens - incarnating", val)
+	n.log.info("got 2 tokens - incarnating with value: ", val)
 	n.ping = &token{Type: ping, Value: val}
 	n.pong = &token{Type: pong, Value: -n.ping.Value}
 }
 
 func (n *node) sendPingToken() {
-	fmt.Println("sending ping token")
+	n.log.info("sending PING token")
 	time.Sleep(time.Second)
 
 	if rand.Float64() > losingPingProbability {
 		msg := message{Type: tokenMsg, Data: n.ping}
 		n.comm.send(msg, n.nextAddress)
 	} else {
-		fmt.Println("welp, ping token seems to be lost in depths of channel...")
+		n.log.warn("PING token seems to be lost in depths of channel...")
 	}
 
 	n.m = n.ping.Value
 	n.ping = nil
-
 }
 
 func (n *node) sendPongToken() {
-	fmt.Println("sending pong token")
+	n.log.info("sending PONG token")
 	time.Sleep(time.Second * 2)
 
 	if rand.Float64() > losingPongProbability {
 		msg := message{Type: tokenMsg, Data: n.pong}
 		n.comm.send(msg, n.nextAddress)
 	} else {
-		fmt.Println("welp, pong token seems to be lost in depths of channel...")
+		n.log.warn("PONG token seems to be lost in depths of channel...")
 	}
 
 	n.m = n.pong.Value
 	n.pong = nil
-
 }
