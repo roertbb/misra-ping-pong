@@ -29,5 +29,5 @@ func (t *token) tokenToValue() string {
 	if t != nil {
 		return strconv.Itoa(t.Value)
 	}
-	return " "
+	return "_"
 }

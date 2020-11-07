@@ -105,8 +105,8 @@ func (n *node) processMsg(msg *message) {
 	case tokenMsg:
 		t := newToken()
 		ms.Decode(msg.Data, t)
-		n.handleTokenMsg(t)
 		n.log.info(fmt.Sprintf("received %s token with %d value", t.tokenToType(), t.Value))
+		n.handleTokenMsg(t)
 	default:
 		n.log.warn("some other type of message?")
 	}
@@ -115,10 +115,10 @@ func (n *node) processMsg(msg *message) {
 func (n *node) handleTokenMsg(t *token) {
 	if t.Value == n.m {
 		if n.m > 0 {
-			n.log.info("lost PONG token - regenerating with value: ", t.Value)
+			n.log.warn("lost PONG token - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		} else {
-			n.log.info("lost PING token - regenerating with value: ", t.Value)
+			n.log.warn("lost PING token - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		}
 	} else if abs(t.Value) < abs(n.m) {
@@ -148,7 +148,7 @@ func (n *node) regenerate(val int) {
 
 func (n *node) incarnate() {
 	val := abs(n.ping.Value) + 1
-	n.log.info("got 2 tokens - incarnating with value: ", val)
+	n.log.warn("got 2 tokens - incarnating with value: ", val)
 	n.ping = &token{Type: ping, Value: val}
 	n.pong = &token{Type: pong, Value: -n.ping.Value}
 }
