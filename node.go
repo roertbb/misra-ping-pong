@@ -8,29 +8,26 @@ import (
 	ms "github.com/mitchellh/mapstructure"
 )
 
-const (
-	losingPingProbability = 0.2
-	losingPongProbability = 0
-)
-
 type node struct {
-	ping        *token
-	pong        *token
-	m           int
-	comm        *comm
-	address     string
-	nextAddress string
-	log         *log
+	ping         *token
+	pong         *token
+	m            int
+	comm         *comm
+	address      string
+	nextAddress  string
+	log          *log
+	pingLossProb float64
+	pongLossProb float64
 }
 
-func newNode(address string, addresses []string) *node {
+func newNode(address string, addresses []string, pingLossProb, pongLossProb float64) *node {
 	idx := strIndexOf(address, addresses)
 	nextAddressIdx := (idx + 1) % len(addresses)
 	nextAddress := addresses[nextAddressIdx]
 	comm := newComm(address, addresses)
 	log := newLog(address, idx)
 
-	newNode := node{ping: nil, pong: nil, m: 0, comm: comm, address: address, nextAddress: nextAddress, log: log}
+	newNode := node{ping: nil, pong: nil, m: 0, comm: comm, address: address, nextAddress: nextAddress, log: log, pingLossProb: pingLossProb, pongLossProb: pongLossProb}
 
 	if address == strLowestVal(addresses) {
 		newNode.log.info("generating first tokens")
@@ -115,10 +112,10 @@ func (n *node) processMsg(msg *message) {
 func (n *node) handleTokenMsg(t *token) {
 	if t.Value == n.m {
 		if n.m > 0 {
-			n.log.warn("lost PONG token - regenerating with value: ", t.Value)
+			n.log.warn("detect PONG token loss - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		} else {
-			n.log.warn("lost PING token - regenerating with value: ", t.Value)
+			n.log.warn("detect PING token loss - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		}
 	} else if abs(t.Value) < abs(n.m) {
@@ -157,7 +154,7 @@ func (n *node) sendPingToken() {
 	n.log.info("sending PING token")
 	time.Sleep(time.Second)
 
-	if rand.Float64() > losingPingProbability {
+	if rand.Float64() > n.pingLossProb {
 		msg := message{Type: tokenMsg, Data: n.ping}
 		n.comm.send(msg, n.nextAddress)
 	} else {
@@ -172,7 +169,7 @@ func (n *node) sendPongToken() {
 	n.log.info("sending PONG token")
 	time.Sleep(time.Second * 2)
 
-	if rand.Float64() > losingPongProbability {
+	if rand.Float64() > n.pongLossProb {
 		msg := message{Type: tokenMsg, Data: n.pong}
 		n.comm.send(msg, n.nextAddress)
 	} else {
