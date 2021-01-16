@@ -61,7 +61,6 @@ func (n *node) run() {
 		} else if n.ping != nil {
 			// ping token
 			n.criticalSection()
-			n.ilisten()
 			n.sendPingToken()
 
 		} else if n.pong != nil {
@@ -86,17 +85,6 @@ func (n *node) listen() {
 	n.processMsg(msg)
 }
 
-func (n *node) ilisten() {
-	for {
-		msg := n.comm.irecv()
-		if msg != nil {
-			n.processMsg(msg)
-		} else {
-			break
-		}
-	}
-}
-
 func (n *node) processMsg(msg *message) {
 	switch msg.Type {
 	case tokenMsg:
@@ -112,14 +100,14 @@ func (n *node) processMsg(msg *message) {
 func (n *node) handleTokenMsg(t *token) {
 	if t.Value == n.m {
 		if n.m > 0 {
-			n.log.warn("detect PONG token loss - regenerating with value: ", t.Value)
+			n.log.warn("PONG token loss detected - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		} else {
-			n.log.warn("detect PING token loss - regenerating with value: ", t.Value)
+			n.log.warn("PING token loss detected - regenerating with value: ", t.Value)
 			n.regenerate(t.Value)
 		}
 	} else if abs(t.Value) < abs(n.m) {
-		n.log.warn("received some old token?", abs(t.Value), abs(n.m))
+		n.log.warn("received some old token? - skipping", abs(t.Value), abs(n.m))
 		return
 	} else if t.Type == ping {
 		if n.ping != nil {
@@ -145,20 +133,21 @@ func (n *node) regenerate(val int) {
 
 func (n *node) incarnate() {
 	val := abs(n.ping.Value) + 1
-	n.log.warn("got 2 tokens - incarnating with value: ", val)
+	n.log.warn(fmt.Sprintf("got 2 tokens - incarnating with value: %d for PING and %d for PONG", val, -val))
 	n.ping = &token{Type: ping, Value: val}
 	n.pong = &token{Type: pong, Value: -n.ping.Value}
 }
 
 func (n *node) sendPingToken() {
 	n.log.info("sending PING token")
-	time.Sleep(time.Second)
 
 	if rand.Float64() > n.pingLossProb {
+		// simulating some channel delay...
+		time.Sleep(time.Second)
 		msg := message{Type: tokenMsg, Data: n.ping}
 		n.comm.send(msg, n.nextAddress)
 	} else {
-		n.log.warn("PING token seems to be lost in depths of channel...")
+		n.log.warn("(PING token seems to be lost in depths of channel...)")
 	}
 
 	n.m = n.ping.Value
@@ -167,13 +156,14 @@ func (n *node) sendPingToken() {
 
 func (n *node) sendPongToken() {
 	n.log.info("sending PONG token")
-	time.Sleep(time.Second * 2)
 
 	if rand.Float64() > n.pongLossProb {
+		// simulating some channel delay...
+		time.Sleep(time.Second * 2)
 		msg := message{Type: tokenMsg, Data: n.pong}
 		n.comm.send(msg, n.nextAddress)
 	} else {
-		n.log.warn("PONG token seems to be lost in depths of channel...")
+		n.log.warn("(PONG token seems to be lost in depths of channel...)")
 	}
 
 	n.m = n.pong.Value

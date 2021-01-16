@@ -27,12 +27,12 @@ docker run -it --rm -e PING_LOSS_PROB=0 -e PONG_LOSS_PROB=0.1 -e ADDRESSES='127.
 
 ## example log
 
-example log of lost token regeneration for 3 nodes taking part in processing
+example log of lost token regeneration for 3 nodes taking part in processing can be found in `log_example` directory
 
 ping
 
-![ping token loss](./log_example/ping-loss.png)
+![ping token loss](./log_example/ping_loss.png)
 
 pong
 
-![pong token loss](./log_example/pong-loss.png)
+![pong token loss](./log_example/pong_loss.png)

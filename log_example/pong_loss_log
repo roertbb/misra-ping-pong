@@ -1,0 +1,153 @@
+127.0.0.1:4001 | generating first tokens
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | sending first tokens
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PING token with 1 value
+127.0.0.1:4002 | state: ping 1 | pong _ 
+127.0.0.1:4002 | entering critical section...
+127.0.0.1:4002 | leaving critical section...
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PONG token with -1 value
+127.0.0.1:4002 | state: ping _ | pong -1 
+127.0.0.1:4002 | sending PONG token
+127.0.0.1:4003 | received PING token with 1 value
+127.0.0.1:4003 | state: ping 1 | pong _ 
+127.0.0.1:4003 | entering critical section...
+127.0.0.1:4003 | leaving critical section...
+127.0.0.1:4003 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4003 | received PONG token with -1 value
+127.0.0.1:4003 | state: ping _ | pong -1 
+127.0.0.1:4003 | sending PONG token
+127.0.0.1:4001 | received PING token with 1 value
+127.0.0.1:4001 | state: ping 1 | pong _ 
+127.0.0.1:4001 | entering critical section...
+127.0.0.1:4001 | leaving critical section...
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4001 | received PONG token with -1 value
+127.0.0.1:4001 | state: ping _ | pong -1 
+127.0.0.1:4001 | sending PONG token
+127.0.0.1:4002 | received PING token with 1 value
+127.0.0.1:4002 | state: ping 1 | pong _ 
+127.0.0.1:4002 | entering critical section...
+127.0.0.1:4002 | leaving critical section...
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PONG token with -1 value
+127.0.0.1:4002 | state: ping _ | pong -1 
+127.0.0.1:4002 | sending PONG token
+127.0.0.1:4003 | received PING token with 1 value
+127.0.0.1:4003 | state: ping 1 | pong _ 
+127.0.0.1:4003 | entering critical section...
+127.0.0.1:4003 | leaving critical section...
+127.0.0.1:4003 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4003 | received PONG token with -1 value
+127.0.0.1:4003 | state: ping _ | pong -1 
+127.0.0.1:4003 | sending PONG token
+127.0.0.1:4001 | received PING token with 1 value
+127.0.0.1:4001 | state: ping 1 | pong _ 
+127.0.0.1:4001 | entering critical section...
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | leaving critical section...
+127.0.0.1:4001 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4001 | received PONG token with -1 value
+127.0.0.1:4001 | state: ping _ | pong -1 
+127.0.0.1:4001 | sending PONG token
+127.0.0.1:4002 | received PING token with 1 value
+127.0.0.1:4002 | state: ping 1 | pong _ 
+127.0.0.1:4002 | entering critical section...
+127.0.0.1:4002 | leaving critical section...
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PONG token with -1 value
+127.0.0.1:4002 | state: ping _ | pong -1 
+127.0.0.1:4002 | sending PONG token
+127.0.0.1:4003 | received PING token with 1 value
+127.0.0.1:4003 | state: ping 1 | pong _ 
+127.0.0.1:4003 | entering critical section...
+127.0.0.1:4003 | leaving critical section...
+127.0.0.1:4003 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4003 | received PONG token with -1 value
+127.0.0.1:4003 | state: ping _ | pong -1 
+127.0.0.1:4003 | sending PONG token
+127.0.0.1:4001 | received PING token with 1 value
+127.0.0.1:4001 | state: ping 1 | pong _ 
+127.0.0.1:4001 | entering critical section...
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | leaving critical section...
+127.0.0.1:4001 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4001 | received PONG token with -1 value
+127.0.0.1:4001 | state: ping _ | pong -1 
+127.0.0.1:4001 | sending PONG token
+127.0.0.1:4001 | (PONG token seems to be lost in depths of channel...)
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PING token with 1 value
+127.0.0.1:4002 | state: ping 1 | pong _ 
+127.0.0.1:4002 | entering critical section...
+127.0.0.1:4002 | leaving critical section...
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4003 | received PING token with 1 value
+127.0.0.1:4003 | state: ping 1 | pong _ 
+127.0.0.1:4003 | entering critical section...
+127.0.0.1:4003 | leaving critical section...
+127.0.0.1:4003 | sending PING token
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | received PING token with 1 value
+127.0.0.1:4001 | state: ping 1 | pong _ 
+127.0.0.1:4001 | entering critical section...
+127.0.0.1:4001 | leaving critical section...
+127.0.0.1:4001 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PING token with 1 value
+127.0.0.1:4002 | PONG token loss detected - regenerating with value: 1
+127.0.0.1:4002 | state: ping 1 | pong -1 
+127.0.0.1:4002 | got 2 tokens - incarnating with value: 2 for PING and -2 for PONG
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4002 | sending PONG token
+127.0.0.1:4003 | received PING token with 2 value
+127.0.0.1:4003 | state: ping 2 | pong _ 
+127.0.0.1:4003 | entering critical section...
+127.0.0.1:4003 | leaving critical section...
+127.0.0.1:4003 | sending PING token
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4003 | received PONG token with -2 value
+127.0.0.1:4003 | state: ping _ | pong -2 
+127.0.0.1:4003 | sending PONG token
+127.0.0.1:4001 | received PING token with 2 value
+127.0.0.1:4001 | state: ping 2 | pong _ 
+127.0.0.1:4001 | entering critical section...
+127.0.0.1:4001 | leaving critical section...
+127.0.0.1:4003 | state: ping _ | pong _ 
+127.0.0.1:4001 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4001 | received PONG token with -2 value
+127.0.0.1:4001 | state: ping _ | pong -2 
+127.0.0.1:4001 | sending PONG token
+127.0.0.1:4002 | received PING token with 2 value
+127.0.0.1:4002 | state: ping 2 | pong _ 
+127.0.0.1:4002 | entering critical section...
+127.0.0.1:4002 | leaving critical section...
+127.0.0.1:4002 | sending PING token
+127.0.0.1:4001 | state: ping _ | pong _ 
+127.0.0.1:4002 | state: ping _ | pong _ 
+127.0.0.1:4002 | received PONG token with -2 value
+127.0.0.1:4002 | state: ping _ | pong -2 
+127.0.0.1:4002 | sending PONG token
+127.0.0.1:4003 | received PING token with 2 value
+127.0.0.1:4003 | state: ping 2 | pong _ 
+127.0.0.1:4003 | entering critical section...
